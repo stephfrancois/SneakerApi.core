@@ -12,3 +12,4 @@ C:\Users\Lenovo\Desktop\SneakerApi.core\obj\Debug\net10.0\refint\SneakerApi.core
 C:\Users\Lenovo\Desktop\SneakerApi.core\obj\Debug\net10.0\SneakerApi.core.pdb
 C:\Users\Lenovo\Desktop\SneakerApi.core\obj\Debug\net10.0\SneakerApi.core.genruntimeconfig.cache
 C:\Users\Lenovo\Desktop\SneakerApi.core\obj\Debug\net10.0\ref\SneakerApi.core.dll
+C:\Users\Lenovo\Desktop\SneakerApi.core\obj\Debug\net10.0\SneakerApi.core.sourcelink.json
