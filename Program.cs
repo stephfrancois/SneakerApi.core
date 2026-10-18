@@ -6,74 +6,65 @@ namespace SneakerApi.core
     {
         static void Main(string[] args)
         {
-        // --- Encapsulation --- //            
-            Sneaker sneaker1 = new Sneaker("Nike", "Air Force 1", "White", 100.00m, true);
-            SneakerRecord record1 = new SneakerRecord("Adidas", "Yeezy 350", "Black", 220.00m, true);
+        // --- LINQ --- //  
+            List<SneakerRecord> catalog = new List<SneakerRecord>
+            {
+                new SneakerRecord("Nike", "Air Force 1", "White", 100.00m, true),
+                new SneakerRecord("Nike", "Air Jordan 1", "Red", 180.00m, true),
+                new SneakerRecord("Addas", "Yeezy 350", "Black", 250.00m, false),
+                new SneakerRecord("Adidas", "Forum Low", "White", 95.00m, true),
+                new SneakerRecord("New Balance", "550", "Grey", 120.00m, true)
+            };
 
-            System.Console.WriteLine("--- TEST D'ENCAPSULATION ---");
-            System.Console.WriteLine("Produit : " + sneaker1.Brand + " " + sneaker1.Model);
-            System.Console.WriteLine("Prix actuel: $" + sneaker1.Price);
+            System.Console.WriteLine("--- DEMO LINQ ---");
 
-            sneaker1.ApplyDiscount(15.00m);
-            sneaker1.Sell();
-            System.Console.WriteLine("Prix apres rabais : $" + sneaker1.Price);
+            var availableNikes = catalog
+                .Where(s =>s.InStock && s.Brand == "Nike").ToList();
 
+            System.Console.WriteLine("\n[1] Nike disponible en stock :");
+            foreach(var sneaker in availableNikes)
+            {
+                System.Console.WriteLine($" - {sneaker.Model} : ${sneaker.Price} ");
+            }
+
+            var sortedByPrice = catalog
+                .OrderBy(s => s.Price).ToList();
+
+            System.Console.WriteLine("\n[n2] Catalogue trie par prix croissant :");
+            foreach(var sneaker in sortedByPrice)
+            {
+                System.Console.WriteLine($" - {sneaker.Brand} {sneaker.Model} (${sneaker.Price})");
+            }
+
+            var upToOneHundred = catalog
+                .Where(s =>s.InStock && s.Price > 100.00m)
+                .ToList();
+            
+            System.Console.WriteLine("\n[3] Disponible en stock avec prix superieur a $100.00 :");
+            foreach(var sneaker in upToOneHundred)
+            {
+                System.Console.WriteLine($" - {sneaker.Brand} {sneaker.Model} : ${sneaker.Price}");
+            }
             System.Console.WriteLine();
-            System.Console.WriteLine("--- TEST D'ENCAPSULATION AVEC RECORD ---");
-            System.Console.WriteLine("Produit : " + record1.Brand + " - " + record1.Model);
-            System.Console.WriteLine("Prix actuel : $" + record1.Price);
 
+            System.Console.WriteLine("--- DEMO PATTERN MATCHING ---");
+
+            System.Console.WriteLine("\n[4] Details sur les status de produits :");
+            foreach(SneakerRecord sneaker in catalog)
+            {
+                System.Console.WriteLine($" - {sneaker.Brand} {sneaker.Model} (${sneaker.Price}) -> {GetPriceCategory(sneaker)}");
+            }
         }
+        // --- Pattern Matching --- //
+        static string GetPriceCategory(SneakerRecord sneaker) => sneaker switch
+        {
+            {InStock: false} => "❌ Indisponible",
+            {Price: < 100.00m} => "🏷️ Économique",
+            {Price: >= 100.00m and <= 200.00m} => "👟 Prix Standard",
+            {Price: >200.00m} => "🔥 Édition Limitée / Premium",
+            _ => "Categorie inconnue"
+        };
     }
 
-
-
-    public class Sneaker
-    {
-        public string Brand {get; init;}
-        public string Model {get; init;}
-        public string Color {get; init;}
-        public decimal Price {get; private set;}
-        public bool InStock {get; private set;}
-
-        public Sneaker(string brand, string model, string color, decimal price, bool inStock)
-        {
-            Brand = brand;
-            Model = model;
-            Color = color;
-            Price = price;
-            InStock = inStock;
-        }       
-
-
-        public void ApplyDiscount(decimal discountAmount)
-        {
-            if(discountAmount <= 0)
-            {
-                System.Console.WriteLine("Attention : Le montant du rabais doit être positif !");
-                return;
-            }
-
-            if (Price - discountAmount < 0)
-            {
-                Console.WriteLine("Attention : Le prix ne peut pas devenir négatif !");
-                return;
-            }
-
-            Price = Price - discountAmount;
-        }
-
-        public void Restock()
-        {
-            InStock = true;
-        }
-
-        public void Sell()
-        {
-            InStock = false;
-            System.Console.WriteLine("Ce produit n'est plus en stock!");
-        }
-    }
     public record SneakerRecord( string Brand, string Model, string Color, decimal Price, bool InStock);
-    
 }

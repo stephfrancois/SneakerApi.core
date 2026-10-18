@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SneakerApi.core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b536f57825f23e1632ab422855845b126a4da9c1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed683c517cccf56b0dcf6c77704e8d6414971db8")]
 [assembly: System.Reflection.AssemblyProductAttribute("SneakerApi.core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SneakerApi.core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
