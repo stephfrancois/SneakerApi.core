@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
+using SneakerApi.core.Models;
 
 namespace SneakerApi.core
 {
@@ -85,5 +86,4 @@ namespace SneakerApi.core
             Console.WriteLine($"Paiement de ${amount} effectué avec succès!");              
         }
     }
-    public record SneakerRecord( int Id, string Brand, string Model, string Color, decimal Price, bool InStock);
 }
