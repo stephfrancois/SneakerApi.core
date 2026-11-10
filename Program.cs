@@ -1,7 +1,9 @@
-﻿using SneakerApi.core.Models;
-using SneakerApi.core.Services.Discounts;
-using System;
-using System.Security.Cryptography.X509Certificates;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using SneakerApi.core.Data;
+using SneakerApi.core.Models;
 
 namespace SneakerApi.core
 {
@@ -9,101 +11,95 @@ namespace SneakerApi.core
     {
         static async Task Main(string[] args)
         {
+            System.Console.WriteLine("=== SEMAINES 5 & 6 : TEST EF CORE & CRUD ASYNCHRONE ===\n");
 
-            //List<SneakerRecord> catalog = new List<SneakerRecord>
-            //{
-            //    new SneakerRecord(1, "Nike", "Air Force 1", "White", 100.00m, true),
-            //    new SneakerRecord(2, "Nike", "Air Jordan 1", "Red", 180.00m, true),
-            //    new SneakerRecord(5, "Adidas", "Yeezy 350", "Black", 250.00m, false),
-            //};
+            using var context = new SneakerDbContext();
 
-            //System.Console.WriteLine("--- DEMO ASYNC & EXEPTIONS ---");
+            // 1 & 2. CREATE (Insertion si la table est vide)
+            System.Console.WriteLine("--> 1. Vérification de la base de données...");
 
-            //System.Console.WriteLine("Chargement du produit depuis la Base de donnees...");
-
-            //    try
-            //    {
-            //        SneakerRecord sneaker = await FetchSneakerByIdAsync(catalog, 1);
-            //        System.Console.WriteLine($"✅ Produit trouver : {sneaker.Brand} {sneaker.Model} (${sneaker.Price})");
-
-            //        System.Console.WriteLine("\nRecherche d'un produit inexistant (ID 99)...");
-            //        SneakerRecord notFoundSneaker = await FetchSneakerByIdAsync(catalog, 99);
-            //    }
-
-            //    catch(KeyNotFoundException ex)
-            //    {
-            //        System.Console.WriteLine($"⚠️ Erreur attrapée : {ex.Message}");
-            //    }
-
-            //    catch(Exception ex)
-            //    {
-            //        System.Console.WriteLine($"💥 Erreur innatendue : {ex.Message}");
-            //    }
-
-            //System.Console.WriteLine("\nTest de la methode ProcessPaymentAsync...!!!");
-
-            //    try
-            //    {
-            //        await ProcessPaymentAsync(100.00m);
-
-            //        await ProcessPaymentAsync(-50.00m);
-            //    }
-
-            //    catch(ArgumentException ex)
-            //    {
-            //        System.Console.WriteLine($"⚠️ Erreur de paiement : {ex.Message}");
-            //    }
-
-            //    catch(Exception ex)
-            //    {
-            //        System.Console.WriteLine($"💥 Erreur inattendue : {ex.Message}");
-            //    }
-
-            //}
-
-
-            //public static async Task<SneakerRecord> FetchSneakerByIdAsync(List<SneakerRecord> catalog, int id)
-            //{
-            //    await Task.Delay(1000);
-
-            //    var sneaker = catalog.FirstOrDefault(s => s.Id == id);
-
-            //    if(sneaker == null)
-            //    {
-            //        throw new KeyNotFoundException($"La sneaker avec l'ID {id} n'existe pas dans la catalogue.");
-            //    }
-
-            //    return sneaker;
-            //}
-
-            //public static async Task ProcessPaymentAsync(decimal amount)
-            //{
-            //    await Task.Delay(1500);
-
-            //    if(amount <= 0)
-            //    {
-            //        throw new ArgumentException("Le montant du paiement doit être supérieur à $0.00.");
-            //    }
-            //    Console.WriteLine($"Paiement de ${amount} effectué avec succès!");              
-            //}
-
-            Console.WriteLine("--- DÉMO POLYMORPHISME ET ABSTRACTION ---");
-
-            decimal originalPrice = 200.00m;
-            List<DiscountStrategy> promotions = new List<DiscountStrategy>
+            if (!await context.Sneakers.AnyAsync())
             {
-                new PercentageDiscount("Rabais de Saison (20%)", 20m),
-                new FlatDiscount("Coupon Vendeur ($30)", 30m)
-            };
+                System.Console.WriteLine("--> 2. Insertion de nouvelles sneakers...");
 
-            Console.WriteLine($"Prix original de la sneaker : ${originalPrice}\n");
+                var sneaker1 = new Sneaker
+                {
+                    Brand = "Nike",
+                    Model = "Air Max 90",
+                    Color = "White/Red",
+                    Price = 160.00m,
+                    InStock = true
+                };
 
-            foreach (var promo in promotions)
+                var sneaker2 = new Sneaker
+                {
+                    Brand = "Adidas",
+                    Model = "Ultraboost 1.0",
+                    Color = "Core Black",
+                    Price = 190.00m,
+                    InStock = true
+                };
+
+                await context.Sneakers.AddRangeAsync(sneaker1, sneaker2);
+                await context.SaveChangesAsync();
+                System.Console.WriteLine("✅ 2 sneakers insérées avec succès en base de données !\n");
+            }
+            else
             {
-                decimal discountAmount = promo.CalculateDiscount(originalPrice);
-                decimal finalPrice = originalPrice - discountAmount;
+                System.Console.WriteLine("--> Des données existent déjà dans la base.\n");
+            }
 
-                Console.WriteLine($"Promotion [{promo.Name}] -> Rabais : ${discountAmount} | Prix final : ${finalPrice}");
+            // 3. READ (Lecture du catalogue complet)
+            System.Console.WriteLine("--> 3. Lecture du catalogue complet (AsNoTracking) :");
+            var catalog = await context.Sneakers.AsNoTracking().ToListAsync();
+
+            foreach (var s in catalog)
+            {
+                System.Console.WriteLine($"   [ID {s.ID}] {s.Brand} {s.Model} ({s.Color}) - ${s.Price} | En stock: {s.InStock}");
+            }
+
+            // 4. READ AVEC FILTRE (LINQ)
+            System.Console.WriteLine("\n--> 4. Recherche des sneakers de marque 'Nike' :");
+            var Nikes = await context.Sneakers
+                                     .AsNoTracking()
+                                     .Where(s => s.Brand == "Nike")
+                                     .ToListAsync();
+
+            foreach (var n in Nikes)
+            {
+                System.Console.WriteLine($"   Found: {n.Model} à ${n.Price}");
+            }
+
+            // 5. UPDATE (Mise à jour de la sneaker ID 1)
+            System.Console.WriteLine("\n--> 5. Mise à jour du prix de la sneaker ID 1 (Nike Air Max 90) :");
+            var sneakerToUpdate = await context.Sneakers.FirstOrDefaultAsync(s => s.ID == 1);
+
+            if (sneakerToUpdate != null)
+            {
+                System.Console.WriteLine($"   Prix actuel : ${sneakerToUpdate.Price}");
+                sneakerToUpdate.Price = 140.00m;
+                await context.SaveChangesAsync();
+                System.Console.WriteLine($"   ✅ Nouveau prix enregistré : ${sneakerToUpdate.Price}");
+            }
+
+            // 6. DELETE (Suppression de la sneaker ID 2)
+            System.Console.WriteLine("\n--> 6. Suppression de la sneaker ID 2 (Adidas Ultraboost) :");
+            var sneakerToDelete = await context.Sneakers.FirstOrDefaultAsync(s => s.ID == 2);
+
+            if (sneakerToDelete != null)
+            {
+                context.Sneakers.Remove(sneakerToDelete);
+                await context.SaveChangesAsync();
+                System.Console.WriteLine("   ✅ Sneaker ID 2 supprimée de la base de données !");
+            }
+
+            // 7. VERIFICATION FINALE
+            System.Console.WriteLine("\n--> 7. État final du catalogue :");
+            var finalCatalog = await context.Sneakers.AsNoTracking().ToListAsync();
+
+            foreach (var s in finalCatalog)
+            {
+                System.Console.WriteLine($"   [ID {s.ID}] {s.Brand} {s.Model} - ${s.Price}");
             }
         }
     }
